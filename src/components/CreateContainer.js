@@ -14,6 +14,13 @@ function CreateContainer() {
   const [elems, setElems] = useState([]);
   const [lastDate, setLastDate] = useState('');
 
+  const reverseDate = (date) => {
+    let dateRevers = date.split('.');
+     dateRevers = dateRevers.reverse().join('.');
+
+    return dateRevers;
+  }
+
   const handleElem = () => {
     if (form.date === '') {
       return;
@@ -26,7 +33,8 @@ function CreateContainer() {
     let update = 0;
 
     elems.forEach((item) => {
-      if (item.date === form.date) {
+
+      if (item.date === reverseDate(form.date)) {
         item.distant = +item.distant + +form.distant;
         item.distant = item.distant.toFixed(1);
 
@@ -40,14 +48,17 @@ function CreateContainer() {
       }
     })
 
-    const steps = [{
+    const steps = {
       date: form.date,
       distant: form.distant
-    }]
+    }
 
     if (update === 0) {
+
+      steps.date = reverseDate(steps.date);
       setElems(elems.concat(steps));
     }
+
     setForm(prevForm => ({...prevForm, date: '', distant: ''}));
   }
 
@@ -62,57 +73,60 @@ function CreateContainer() {
     setForm(prevForm => ({...prevForm, [name]: value}));
   }
 
-  const handleSwitch = switchFlag => {
-    setForm(prevForm => ({...prevForm, switch: switchFlag}));
+    const handleSwitch = switchFlag => {
+      setForm(prevForm => ({...prevForm, switch: switchFlag}));
+    }
+
+    const handleGetData = (date, dist) => {
+      setForm(prevForm => ({...prevForm, date: date, distant: dist, edit: true}));
+
+      setLastDate(reverseDate(date));
+    }
+
+    const handleEdit = (date, dist) => {
+
+      setElems(prevElems => prevElems.map(el => {
+        if (el.date === lastDate) {
+          el.date = reverseDate(date);
+          el.distant = dist;
+        }
+        return el;
+      }));
+      setForm(prevForm => ({...prevForm, date: '', distant: '', edit: undefined, switch: true}));
+    }
+
+    const handleRemove = date => {
+
+      setElems(prevElems => prevElems.filter(elem => elem.date !== reverseDate(date)));
+    }
+
+    return (
+      <div className={"content-table"}>
+
+        <EnterUserData
+          item={form}
+          handleData={handleData}
+          handleSwitch={handleSwitch}
+          handleElem={handleElem}
+          handleEdit={handleEdit}
+        />
+
+        <table className={"table-data"}>
+          <thead>
+          <tr>
+            <th>Дата (ДД.ММ.ГГГГ)</th>
+            <th>Пройдено км</th>
+            <th>Действия</th>
+          </tr>
+          </thead>
+          <tbody className={"tbody"}>
+          {form.switch === true && elems.map(elem => {
+            return <UserData item={elem} key={uuid()} handleRemove={handleRemove} handleGetData={handleGetData}/>
+          })}
+          </tbody>
+        </table>
+      </div>
+    );
   }
-
-  const handleGetData = (date, dist) => {
-    setForm(prevForm => ({...prevForm, date: date, distant: dist, edit: true}));
-    setLastDate(date);
-  }
-
-  const handleEdit = (date, dist) => {
-    setElems(prevElems => prevElems.map(el => {
-      if (el.date === lastDate) {
-        el.date = date;
-        el.distant = dist;
-      }
-      return el;
-    }));
-    setForm(prevForm => ({...prevForm, date: '', distant: '', edit: undefined, switch: true}));
-  }
-
-  const handleRemove = date => {
-    setElems(prevElems => prevElems.filter(elem => elem.date !== date));
-  }
-
-  return (
-    <div className={"content-table"}>
-
-      <EnterUserData
-        item={form}
-        handleData={handleData}
-        handleSwitch={handleSwitch}
-        handleElem={handleElem}
-        handleEdit={handleEdit}
-      />
-
-      <table className={"table-data"}>
-        <thead>
-        <tr>
-          <th>Дата (ДД.ММ.ГГГГ)</th>
-          <th>Пройдено км</th>
-          <th>Действия</th>
-        </tr>
-        </thead>
-        <tbody className={"tbody"}>
-        {form.switch === true && elems.map(elem => {
-          return <UserData item={elem} key={uuid()} handleRemove={handleRemove} handleGetData={handleGetData}/>
-        })}
-        </tbody>
-      </table>
-    </div>
-  );
-}
 
 export default CreateContainer;

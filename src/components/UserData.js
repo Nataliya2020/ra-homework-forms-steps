@@ -18,9 +18,13 @@ function UserData(item) {
     item.handleGetData(valueDate, valueDist);
   }
 
+  let reversDate = date.split('.');
+
+  reversDate = reversDate.reverse().join('.');
+
   return (
     <tr>
-      <td className={"dataTD"} id={"date"}>{date}</td>
+      <td className={"dataTD"} id={"date"}>{reversDate}</td>
       <td className={"dataTD"} id={"distant"}>{distant}</td>
       <td className={"dataTD"}>
         <div className={"control"}>
